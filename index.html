@@ -1,125 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="utf-8">
-    <title>Gifs</title>
-    <style type="text/css">
-    body {
-        font-family: 'trebuchet ms';
-        font-size: 14px;
-        font-weight: bold;
-    }
-    
-    #gif-container > div {
-        display: inline-block;
-        background-color: #ddd;
-        margin: 10px;
-        padding: 0 10px 8px 10px;
-    }
-    
-    #gif-container > div > img {
-        width: 300px;
-    }
-    
-    .rating {
-        display: inline-block;
-        border-radius: 3px;
-        padding: 3px 6px;
-    }
-    
-    .green {
-        background-color: #27b827;
-    }
-    
-    .yellow {
-        background-color: #ffee00;
-    }
-    
-    .orange {
-        background-color: #fa2;
-    }
-    
-    .red {
-        background-color: #f22;
-    }
-    </style>
-</head>
-
-<body>
-    <div id="button-container"></div>
-    <div id="gif-container"></div>
-    <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
-    <script type="text/javascript">
-    var topics = ['Birb', 'Picard', 'Doggo', 'Explosion'];
-
-    for (i = 0; i < topics.length; i++) {
-        var newBtn = $("<button>");
-        $(newBtn).html(topics[i]);
-        $(newBtn).attr("data-attr", topics[i]);
-        $("#button-container").append(newBtn);
-    }
-
-    $("button").on("click", function() {
-        $("#gif-container").empty();
-
-        var topic = $(this).attr("data-attr");
-        var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + topic + "&api_key=dc6zaTOxFJmzC&limit=10";
-
-        $.ajax({
-            url: queryURL,
-            method: "GET"
-        }).done(function(response) {
-
-            var results = response.data;
-
-            for (var i = 0; i < results.length; i++) {
-                var gifDiv = $("<div>");
-                var rating = results[i].rating;
-                var ratingSpan = $("<span class='rating'>").text(rating.toUpperCase());
-
-                if (rating === "r") {
-                    $(ratingSpan).addClass('red');
-                } else if (rating === "pg") {
-                    $(ratingSpan).addClass('yellow');
-                } else if (rating === "pg-13") {
-                    $(ratingSpan).addClass('orange');
-                } else if (rating === "g") {
-                    $(ratingSpan).addClass('green');
-                } else {}
-
-                var p = $("<p>").html("Rated: ").append(ratingSpan);
-                var stillUrl = results[i].images.original_still.url;
-                var animUrl = results[i].images.original.url;
-                var gifImage = $("<img>").attr({
-                    "class": "gif",
-                    "src": stillUrl,
-                    "data-state": "still",
-                    "data-still": stillUrl,
-                    "data-animate": animUrl
-                });
-
-                $(gifDiv).append(p, gifImage);
-
-                $("#gif-container").prepend(gifDiv);
+    <head>
+        <meta charset="utf-8">
+        <title>Gifs</title>
+        <style type="text/css">
+            body {
+                font-family: 'trebuchet ms';
+                font-size: 14px;
+                font-weight: bold;
             }
 
-            $(".gif").on("click", function() {
-                var state = $(this).attr("data-state");
-                var stillSrc = $(this).attr("data-still");
-                var animSrc = $(this).attr("data-animate");
+            #gif-container>div {
+                display: inline-block;
+                background-color: #ddd;
+                margin: 10px;
+                padding: 0 10px 8px 10px;
+            }
 
-                if (state === "still") {
-                    $(this).attr("src", animSrc);
-                    $(this).attr("data-state", "animate");
-                } else {
-                    $(this).attr("src", stillSrc);
-                    $(this).attr("data-state", "still");
-                }
+            #gif-container>div>img {
+                width: 300px;
+            }
+
+            #button-container {
+                height: 35px;
+            }
+
+            hr {
+                border: 3px solid #ddd;
+                background: none;
+                margin: 20px 0;
+            }
+
+            button {
+                background-color: #eeeef5;
+                border: 2px solid #ccd;
+                color: #333366;
+                padding: 5px 20px;
+                margin: 0 10px 0 0;
+                font-size: 14px;
+                box-shadow: -1px 1px 3px #ccc;
+                border-radius: 3px;
+                outline: none;
+                text-shadow: -1px 1px 0 #fff;
+                display: block;
+                float: left;
+                position: relative;
+            }
+
+            button:hover {
+                background-color: #daeeff;
+                color: #345a96;
+                border: 2px solid #b0d8ec;
+                cursor: pointer;
+                text-shadow: -1px 1px 0 #e6f8ff;
+            }
+
+            .button-mousedown {
+                box-shadow: none;
+                margin: 1px 11px 0 -1px;
+            }
+
+            .rating {
+                display: inline-block;
+                border-radius: 3px;
+                padding: 3px 6px;
+            }
+
+            .green {
+                background-color: #27b827;
+            }
+
+            .yellow {
+                background-color: #ffee00;
+            }
+
+            .orange {
+                background-color: #fa2;
+            }
+
+            .red {
+                background-color: #f22;
+            }
+
+            .clear {
+                clear: both;
+            }
+
+        </style>
+    </head>
+
+    <body>
+
+        <h1>Pick a thing</h1>
+        <div id="button-container"></div>
+        <hr class="clear" />
+        <div id="gif-container"></div>
+        
+        <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+        <script type="text/javascript">
+            var topics = ['Birb', 'Picard', 'Doggo', 'Explosion'];
+            for (i = 0; i < topics.length; i++)
+            {
+                var newBtn = $("<button>");
+                $(newBtn).html(topics[i]);
+                $(newBtn).attr("data-attr", topics[i]);
+                $("#button-container").append(newBtn);
+            }
+
+            $("button").mousedown(function()
+            {
+                $(this).toggleClass("button-mousedown");
             });
-        });
-    });
-    </script>
-</body>
+
+            $("button").on("click", function()
+            {
+                //$("#gif-container").hide();
+                $(this).toggleClass("button-mousedown");
+                $("#gif-container").empty();
+                var topic = $(this).attr("data-attr");
+                var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + topic + "&api_key=dc6zaTOxFJmzC&limit=10";
+                $.ajax(
+                {
+                    url: queryURL,
+                    method: "GET"
+                }).done(function(response)
+                {
+                    var results = response.data;
+                    for (var i = 0; i < results.length; i++)
+                    {
+                        var gifDiv = $("<div>");
+                        var rating = results[i].rating;
+                        var ratingSpan = $("<span class='rating'>").text(rating.toUpperCase());
+                        if (rating === "r")
+                        {
+                            $(ratingSpan).addClass('red');
+                        }
+                        else if (rating === "pg")
+                        {
+                            $(ratingSpan).addClass('yellow');
+                        }
+                        else if (rating === "pg-13")
+                        {
+                            $(ratingSpan).addClass('orange');
+                        }
+                        else if (rating === "g")
+                        {
+                            $(ratingSpan).addClass('green');
+                        }
+                        else
+                        {}
+                        var p = $("<p>").html("Rated: ").append(ratingSpan);
+                        var stillUrl = results[i].images.original_still.url;
+                        var animUrl = results[i].images.original.url;
+                        var gifImage = $("<img>").attr(
+                        {
+                            "class": "gif",
+                            "src": stillUrl,
+                            "data-state": "still",
+                            "data-still": stillUrl,
+                            "data-animate": animUrl
+                        });
+                        $(gifDiv).append(p, gifImage);
+                        $("#gif-container").prepend(gifDiv);
+                    }
+                    $(".gif").on("click", function()
+                    {
+                        var state = $(this).attr("data-state");
+                        var stillSrc = $(this).attr("data-still");
+                        var animSrc = $(this).attr("data-animate");
+                        if (state === "still")
+                        {
+                            $(this).attr("src", animSrc);
+                            $(this).attr("data-state", "animate");
+                        }
+                        else
+                        {
+                            $(this).attr("src", stillSrc);
+                            $(this).attr("data-state", "still");
+                        }
+                    });
+                });
+            });
+
+        </script>
+    </body>
 
 </html>
